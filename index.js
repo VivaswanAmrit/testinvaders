@@ -1,4 +1,4 @@
-import { MobileControlsManager } from './mobile-controls.js';
+mport { MobileControlsManager } from './mobile-controls.js';
 
 const scoreEt = document.querySelector ('#scoreEt');
 const canvas = document.querySelector ('canvas');
@@ -47,6 +47,7 @@ instructions.innerHTML = `
 
 // Create button container for horizontal layout
 const buttonContainer = document.createElement('div');
+buttonContainer.className = 'button-container';
 buttonContainer.style.display = 'flex';
 buttonContainer.style.gap = '20px';
 buttonContainer.style.justifyContent = 'center';
@@ -196,7 +197,7 @@ class Player{
          const image = new Image();
          image.src='./img/mothership.png';
          image.onload = () => {
-            const scale = 0.15;
+            const scale = this.isMobile() ? 0.12 : 0.15;
             this.image =  image;
             this.width= image.width*scale;
             this.height = image.height*scale;
@@ -209,6 +210,10 @@ class Player{
             const mobileControls = new MobileControlsManager(game, canvas, this, keys);
          };
         
+    }
+
+    isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
     draw(){
@@ -309,7 +314,7 @@ class Invader{
          const image = new Image();
          image.src='./img/alien.png';
          image.onload = () => {
-            const scale = 0.20;
+            const scale = this.isMobile() ? 0.16 : 0.20; // 20% smaller for mobile
             this.image =  image;
             this.width= image.width*scale;
             this.height = image.height*scale;
@@ -319,6 +324,11 @@ class Invader{
             };
          }; 
     }
+
+    isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
     draw(){
         //  c.fillStyle= 'red'
         //  c.fillRect (this.position.x,this.position.y,this.width,this.height)
@@ -374,8 +384,10 @@ class Grid{
             y:0
         }
 
+        // Adjust speed based on mobile
+        const speedFactor = this.isMobile() ? 0.65 : 1; // Reduce speed by 35% for mobile
         this.velocity = {
-            x: gameSettings.alienSpeed,
+            x: gameSettings.alienSpeed * speedFactor,
             y: 0
         }
         this.invaders=[]
@@ -394,6 +406,10 @@ class Grid{
          }}))}
         }
         
+    }
+
+    isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
     update(){
@@ -551,7 +567,7 @@ function animate(){
         grid.update()
         
         if (frames % 70 === 0 && grid.invaders.length > 0) {
-            const numShooters = Math.min(gameSettings.shootersCount, grid.invaders.length);
+            const numShooters = this.isMobile() ? Math.max(gameSettings.shootersCount - 2, 1) : gameSettings.shootersCount;
             const shooters = [];
 
             while (shooters.length < numShooters) {
