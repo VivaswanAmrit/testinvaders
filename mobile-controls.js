@@ -61,7 +61,7 @@ export class MobileControlsManager {
 
         leftButton.innerHTML = '←';
         rightButton.innerHTML = '→';
-        shootButton.innerHTML = '🔥';
+        shootButton.innerHTML = '●';
 
         this.addButtonListeners(leftButton, rightButton, shootButton);
 
