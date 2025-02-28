@@ -144,18 +144,26 @@ instructions.innerHTML = `
     <p>SPACE - Shoot</p>
 `;
 
-// Create button container
+// Adjust instructions for mobile display
+instructions.style.padding = '0 20px';
+if (isMobile()) {
+    instructions.style.fontSize = '18px';
+}
+
+// Create button container first
 const buttonContainer = document.createElement('div');
 buttonContainer.style.display = 'flex';
 buttonContainer.style.gap = '20px';
 buttonContainer.style.justifyContent = 'center';
+buttonContainer.style.flexWrap = 'wrap';
+buttonContainer.style.padding = '0 20px';
 
 // Create difficulty buttons
 const createDifficultyButton = (text, difficulty) => {
     const button = document.createElement('button');
     button.textContent = text;
-    button.style.padding = '15px 30px';
-    button.style.fontSize = '20px';
+    button.style.padding = '15px 20px';
+    button.style.fontSize = isMobile() ? '16px' : '20px';
     button.style.color = 'black';
     button.style.backgroundColor = 'white';
     button.style.border = '2px solid #007bff';
@@ -163,6 +171,8 @@ const createDifficultyButton = (text, difficulty) => {
     button.style.cursor = 'pointer';
     button.style.fontFamily = 'sans-serif';
     button.style.transition = 'all 0.3s ease';
+    button.style.minWidth = isMobile() ? '140px' : '180px';
+    button.style.margin = '5px';
     
     button.onmouseover = () => {
         button.style.backgroundColor = '#007bff';
@@ -182,6 +192,7 @@ const chillButton = createDifficultyButton('Chill Mode', 'chill');
 const standardButton = createDifficultyButton('Standard Mode', 'standard');
 const ludicrousButton = createDifficultyButton('Ludicrous Mode', 'ludicrous');
 
+// Clear start screen and add elements
 startScreen.innerHTML = '';
 startScreen.appendChild(instructions);
 startScreen.appendChild(buttonContainer);
