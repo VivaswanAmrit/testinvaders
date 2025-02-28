@@ -1,3 +1,4 @@
+// Create and export the mobile controls manager
 export class MobileControlsManager {
     constructor(game, canvas, player, keys) {
         this.game = game;
@@ -31,18 +32,27 @@ export class MobileControlsManager {
 
     createTouchControls() {
         const touchControls = document.createElement('div');
-        touchControls.style.position = 'fixed';
-        touchControls.style.bottom = '20px';
-        touchControls.style.left = '0';
-        touchControls.style.width = '100%';
-        touchControls.style.display = 'none';
-        touchControls.style.justifyContent = 'space-between';
-        touchControls.style.padding = '0 20px';
-        touchControls.style.zIndex = '100';
+        Object.assign(touchControls.style, {
+            position: 'fixed',
+            bottom: '40px',
+            left: '0',
+            width: '100%',
+            display: 'none',
+            justifyContent: 'space-between',
+            padding: '0 20px',
+            zIndex: '100',
+            pointerEvents: 'none'
+        });
 
         const [leftButton, rightButton, shootButton] = this.createButtons();
-        const moveButtons = this.createMoveButtonContainer(leftButton, rightButton);
+        
+        // Make buttons receive touch events
+        [leftButton, rightButton, shootButton].forEach(btn => {
+            btn.style.pointerEvents = 'auto';
+        });
 
+        const moveButtons = this.createMoveButtonContainer(leftButton, rightButton);
+        
         touchControls.appendChild(moveButtons);
         touchControls.appendChild(shootButton);
 
@@ -69,15 +79,22 @@ export class MobileControlsManager {
 
     styleButton(button) {
         Object.assign(button.style, {
-            width: '60px',
-            height: '60px',
+            width: '80px',
+            height: '80px',
             borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.3)',
-            border: '2px solid white',
+            backgroundColor: 'rgba(255, 255, 255, 0.4)',
+            border: '3px solid white',
             color: 'white',
-            fontSize: '24px',
+            fontSize: '30px',
             touchAction: 'manipulation',
-            userSelect: 'none'
+            userSelect: 'none',
+            position: 'relative',
+            cursor: 'pointer',
+            margin: '0 10px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            outline: 'none'
         });
     }
 
@@ -97,19 +114,15 @@ export class MobileControlsManager {
     }
 
     addTouchListener(button, key) {
-        try {
-            button.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.keys[key].pressed = true;
-            });
+        const handleTouch = (pressed) => (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.keys[key].pressed = pressed;
+        };
 
-            button.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                this.keys[key].pressed = false;
-            });
-        } catch (error) {
-            console.warn('Touch events not supported:', error);
-        }
+        button.addEventListener('touchstart', handleTouch(true), { passive: false });
+        button.addEventListener('touchend', handleTouch(false), { passive: false });
+        button.addEventListener('touchcancel', handleTouch(false), { passive: false });
     }
 
     setupResizeHandlers() {
