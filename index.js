@@ -7,8 +7,6 @@ const c = canvas.getContext('2d');
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
-
-
 // Define Player class first
 class Player {
     constructor(){
@@ -101,7 +99,11 @@ const keys = {
 
 // Utility function for mobile detection
 function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (window.innerWidth <= 800 && window.innerHeight <= 900) ||
+        ('ontouchstart' in window)
+    );
 }
 
 // Create player instance after class definition
@@ -228,8 +230,17 @@ function startGame(difficulty) {
     canvas.style.display = 'block';
     game.active = true;
     frames = 0;
+
+    // Always reinitialize mobile controls when starting game
+    if (isMobile()) {
+        mobileControls.hideControls();  // Hide first to ensure clean state
+        mobileControls.init();          // Reinitialize
+        setTimeout(() => {              // Show after a brief delay
+            mobileControls.showControls();
+        }, 100);
+    }
+
     animate();
-    mobileControls.showControls();
 }
 
 game.active= false;
@@ -878,3 +889,13 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 window.addEventListener('orientationchange', () => {
     setTimeout(resizeCanvas, 100);
+});
+
+// Initialize mobile controls immediately if on mobile
+if (isMobile()) {
+    mobileControls.init();
+    // Show controls if game is active
+    if (game.active) {
+        mobileControls.showControls();
+    }
+}
