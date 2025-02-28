@@ -1,5 +1,3 @@
-mport { MobileControlsManager } from './mobile-controls.js';
-
 const scoreEt = document.querySelector ('#scoreEt');
 const canvas = document.querySelector ('canvas');
 const c = canvas.getContext('2d');
@@ -47,7 +45,6 @@ instructions.innerHTML = `
 
 // Create button container for horizontal layout
 const buttonContainer = document.createElement('div');
-buttonContainer.className = 'button-container';
 buttonContainer.style.display = 'flex';
 buttonContainer.style.gap = '20px';
 buttonContainer.style.justifyContent = 'center';
@@ -57,22 +54,6 @@ let animationId = null;
 
 // Add a global variable to store a pending end-screen timeout ID
 let endScreenTimeoutId = null;
-
-// Add this near the top with other game variables
-let frames = 0;
-
-// Move keys declaration to the top with other game variables
-const keys = {
-    a: {
-        pressed: false
-    },
-    d: {
-        pressed: false
-    },
-    space: {
-        pressed: false
-    }
-};
 
 // Modify the createDifficultyButton function
 const createDifficultyButton = (text, difficulty) => {
@@ -130,8 +111,6 @@ let lastShotTime = 0;
 const SHOT_COOLDOWN = 50; // 100ms between shots for faster firing rate
 let sessionHighScore = 0;
 
-
-
 // Modify the start game function
 function startGame(difficulty) {
     // Cancel any existing animation frame
@@ -173,11 +152,8 @@ function startGame(difficulty) {
     startScreen.style.display = 'none';
     canvas.style.display = 'block';
     game.active = true;
-    frames = 0;  // Now this will work
+    frames = 0;  // Reset frames counter
     animate();
-    
-    // Show mobile controls if needed
-    mobileControls.showControls();
 }
 
 game.active= false;
@@ -197,7 +173,7 @@ class Player{
          const image = new Image();
          image.src='./img/mothership.png';
          image.onload = () => {
-            const scale = this.isMobile() ? 0.12 : 0.15;
+            const scale = 0.15;
             this.image =  image;
             this.width= image.width*scale;
             this.height = image.height*scale;
@@ -205,15 +181,8 @@ class Player{
                 x: canvas.width/2 - this.width/2,
                 y: canvas.height-this.height-20
             };
-            
-            // Initialize mobile controls after player is fully loaded
-            const mobileControls = new MobileControlsManager(game, canvas, this, keys);
          };
         
-    }
-
-    isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
     draw(){
@@ -314,7 +283,7 @@ class Invader{
          const image = new Image();
          image.src='./img/alien.png';
          image.onload = () => {
-            const scale = this.isMobile() ? 0.16 : 0.20; // 20% smaller for mobile
+            const scale = 0.20;
             this.image =  image;
             this.width= image.width*scale;
             this.height = image.height*scale;
@@ -324,11 +293,6 @@ class Invader{
             };
          }; 
     }
-
-    isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
-
     draw(){
         //  c.fillStyle= 'red'
         //  c.fillRect (this.position.x,this.position.y,this.width,this.height)
@@ -384,10 +348,8 @@ class Grid{
             y:0
         }
 
-        // Adjust speed based on mobile
-        const speedFactor = this.isMobile() ? 0.65 : 1; // Reduce speed by 35% for mobile
         this.velocity = {
-            x: gameSettings.alienSpeed * speedFactor,
+            x: gameSettings.alienSpeed,
             y: 0
         }
         this.invaders=[]
@@ -406,10 +368,6 @@ class Grid{
          }}))}
         }
         
-    }
-
-    isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
     update(){
@@ -446,13 +404,23 @@ class InvaderProjectile{
 }
 
 const player = new Player();
-const mobileControls = new MobileControlsManager(game, canvas, player, keys);
-
 const projectiles = []
 const grids = []
 const invaderProjectiles = []
 const particles = []
+const keys = {
+    a: {
+        pressed: false
+    },
+    d: {
+        pressed: false
+    },
+    space: {
+        pressed: false
+    }
+}
 
+let frames =0
 let intervalrnd = Math.floor((Math.random()*200) + 200);
 
 
@@ -567,7 +535,7 @@ function animate(){
         grid.update()
         
         if (frames % 70 === 0 && grid.invaders.length > 0) {
-            const numShooters = this.isMobile() ? Math.max(gameSettings.shootersCount - 2, 1) : gameSettings.shootersCount;
+            const numShooters = Math.min(gameSettings.shootersCount, grid.invaders.length);
             const shooters = [];
 
             while (shooters.length < numShooters) {
@@ -817,9 +785,6 @@ function createEndScreen() {
     endScreen.appendChild(scoreDisplay);
     endScreen.appendChild(buttonContainer);
 
-    // Adjust for mobile if needed
-    mobileControls.adjustEndScreenForMobile(buttonContainer);
-    
     return endScreen;
 }
 
