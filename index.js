@@ -7,6 +7,10 @@ const c = canvas.getContext('2d');
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
 // Define Player class first
 class Player {
     constructor(){
@@ -98,9 +102,7 @@ const keys = {
 };
 
 // Utility function for mobile detection
-function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
+
 
 // Create player instance after class definition
 const player = new Player();
