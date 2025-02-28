@@ -1,4 +1,3 @@
-// Create and export the mobile controls manager
 export class MobileControlsManager {
     constructor(game, canvas, player, keys) {
         this.game = game;
@@ -12,7 +11,7 @@ export class MobileControlsManager {
     }
 
     init() {
-        // Add viewport meta
+        // Add viewport meta for better mobile experience
         this.addViewportMeta();
         
         // Create touch controls
