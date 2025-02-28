@@ -22,13 +22,13 @@ class Player {
          const image = new Image();
          image.src='./img/mothership.png';
          image.onload = () => {
-            const scale = 0.15;
+            const scale = isMobile() ? 0.10 : 0.15;
             this.image =  image;
             this.width= image.width*scale;
             this.height = image.height*scale;
             this.position = {
                 x: canvas.width/2 - this.width/2,
-                y: canvas.height-this.height-20
+                y: canvas.height - this.height - (isMobile() ? 60 : 20)
             };
          };
     }
@@ -294,7 +294,7 @@ class Invader{
          const image = new Image();
          image.src='./img/alien.png';
          image.onload = () => {
-            const scale = 0.20;
+            const scale = isMobile() ? 0.15 : 0.20;
             this.image =  image;
             this.width= image.width*scale;
             this.height = image.height*scale;
@@ -365,17 +365,17 @@ class Grid{
         }
         this.invaders=[]
 
-         const columns = Math.floor(Math.random()*5+7)
-         const rows = Math.floor(Math.random()*2+3)
+         const columns = Math.floor(Math.random() * (isMobile() ? 3 : 5) + (isMobile() ? 5 : 7))
+         const rows = Math.floor(Math.random() * (isMobile() ? 2 : 2) + (isMobile() ? 2 : 3))
 
-         this.width = columns * 25
+         this.width = columns * (isMobile() ? 20 : 25)
 
         for(let i = 0; i<columns; i++){
             for(let j = 0; j<rows; j++){
 
          this.invaders.push(new Invader({position:{
-            x:i*25,
-            y:j*55
+            x:i*(isMobile() ? 20 : 25),
+            y:j*(isMobile() ? 45 : 55)
          }}))}
         }
         
@@ -585,13 +585,12 @@ function animate(){
         })
     })
 
-    if(keys.a.pressed && player.position.x>=0){
-        player.velocity.x=-5;
+    if(keys.a.pressed && player.position.x >= 0){
+        player.velocity.x = isMobile() ? -3 : -5;
         player.rotation = -0.15;
-
     }
     else if (keys.d.pressed && player.position.x + player.width <= canvas.width){
-        player.velocity.x = 5;
+        player.velocity.x = isMobile() ? 3 : 5;
         player.rotation = 0.15;
     }
     else{
@@ -806,7 +805,7 @@ function resetGame() {
     // Reset player
     player.opacity = 1;
     player.position.x = canvas.width/2 - player.width/2;
-    player.position.y = canvas.height - player.height - 20;
+    player.position.y = canvas.height - player.height - (isMobile() ? 60 : 20);
     
     // Clear arrays
     projectiles.length = 0;
@@ -860,3 +859,20 @@ function showStartScreen() {
     canvas.style.display = 'none';
     startScreen.style.display = 'flex';
 }
+
+// Add this function after your isMobile() function
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Adjust player position after resize
+    if (player && player.position) {
+        player.position.x = canvas.width/2 - player.width/2;
+        player.position.y = canvas.height - player.height - (isMobile() ? 60 : 20);
+    }
+}
+
+// Add these event listeners after canvas initialization
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => {
+    setTimeout(resizeCanvas, 100);
