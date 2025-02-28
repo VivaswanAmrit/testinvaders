@@ -110,7 +110,30 @@ export class MobileControlsManager {
     addButtonListeners(leftButton, rightButton, shootButton) {
         this.addTouchListener(leftButton, 'a');
         this.addTouchListener(rightButton, 'd');
-        this.addTouchListener(shootButton, 'space');
+        
+        // Special handling for shoot button
+        const handleShoot = (pressed) => (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.keys.space.pressed = pressed;
+            
+            // If pressing the button, trigger an immediate shot
+            if (pressed && this.player.canShoot) {
+                const event = new KeyboardEvent('keydown', { key: ' ' });
+                window.dispatchEvent(event);
+            }
+            
+            // If releasing the button, reset canShoot
+            if (!pressed) {
+                this.player.canShoot = true;
+                const event = new KeyboardEvent('keyup', { key: ' ' });
+                window.dispatchEvent(event);
+            }
+        };
+
+        shootButton.addEventListener('touchstart', handleShoot(true), { passive: false });
+        shootButton.addEventListener('touchend', handleShoot(false), { passive: false });
+        shootButton.addEventListener('touchcancel', handleShoot(false), { passive: false });
     }
 
     addTouchListener(button, key) {
