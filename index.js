@@ -211,27 +211,27 @@ function startGame(difficulty) {
         case 'chill':
             gameSettings = {
                 mode: 'chill',
-                alienSpeed: 2,
+                alienSpeed: isMobile() ? 1 : 2,
                 shootersCount: 1,
-                alienSpawnInterval: 300,
+                alienSpawnInterval: isMobile() ? 400 : 300,
                 continuousShooting: true
             };
             break;
         case 'standard':
             gameSettings = {
                 mode: 'standard',
-                alienSpeed: 3,
-                shootersCount: 3,
-                alienSpawnInterval: 200,
+                alienSpeed: isMobile() ? 2 : 3,
+                shootersCount: isMobile() ? 2 : 3,
+                alienSpawnInterval: isMobile() ? 250 : 200,
                 continuousShooting: false
             };
             break;
         case 'ludicrous':
             gameSettings = {
                 mode: 'ludicrous',
-                alienSpeed: 5,
-                shootersCount: 4,
-                alienSpawnInterval: 150,
+                alienSpeed: isMobile() ? 3 : 5,
+                shootersCount: isMobile() ? 3 : 4,
+                alienSpawnInterval: isMobile() ? 150 : 100,
                 continuousShooting: false
             };
             break;
