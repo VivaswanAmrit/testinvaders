@@ -1,13 +1,115 @@
-const scoreEt = document.querySelector ('#scoreEt');
-const canvas = document.querySelector ('canvas');
+import { MobileControlsManager } from './mobile-controls.js';
+
+const scoreEt = document.querySelector('#scoreEt');
+const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
-const startScreen = document.createElement('div'); // Create start screen element
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
+// Define Player class first
+class Player {
+    constructor(){
+        this.velocity = {
+            x: 0,
+            y:0
+        }
 
-// Start screen styles
+        this.rotation = 0;
+        this.opacity = 1;
+        this.canShoot = true; 
+
+         const image = new Image();
+         image.src='./img/mothership.png';
+         image.onload = () => {
+            const scale = 0.15;
+            this.image =  image;
+            this.width= image.width*scale;
+            this.height = image.height*scale;
+            this.position = {
+                x: canvas.width/2 - this.width/2,
+                y: canvas.height-this.height-20
+            };
+         };
+    }
+
+    draw(){
+        c.save();
+        c.globalAlpha = this.opacity
+        c.translate(
+            player.position.x + player.width/2,
+            player.position.y + player.height/2
+        );
+
+        c.rotate(this.rotation)
+
+        c.translate(
+            -player.position.x - player.width/2,
+            -player.position.y - player.height/2
+        );
+
+        if(this.image && this.position)
+        c.drawImage(
+            this.image,
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height
+        );
+        c.restore();
+    }
+
+    update(){
+        if(this.position){
+            this.draw();
+            this.position.x +=this.velocity.x;
+        }
+    }
+}
+
+// Initialize game state variables
+let game = {
+    over: false,
+    active: false
+};
+
+let frames = 0;
+let animationId = null;
+let endScreenTimeoutId = null;
+let sessionHighScore = 0;
+let score = 0;
+let lastShotTime = 0;
+const SHOT_COOLDOWN = 50;
+
+// Game settings
+let gameSettings = {
+    mode: 'standard',
+    alienSpeed: 3,
+    shootersCount: 3,
+    alienSpawnInterval: 200,
+    continuousShooting: false
+};
+
+// Initialize key states
+const keys = {
+    a: { pressed: false },
+    d: { pressed: false },
+    space: { pressed: false }
+};
+
+// Utility function for mobile detection
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Create player instance after class definition
+const player = new Player();
+
+// Initialize mobile controls after player creation
+const mobileControls = new MobileControlsManager(game, canvas, player, keys);
+
+// Create start screen
+const startScreen = document.createElement('div');
 startScreen.style.position = 'fixed';
 startScreen.style.top = '0';
 startScreen.style.left = '0';
@@ -21,16 +123,11 @@ startScreen.style.zIndex = '10';
 startScreen.style.flexDirection = 'column';
 startScreen.style.gap = '30px';
 
-// Add these lines to append startScreen to document and set initial canvas state
+// Add start screen to document and hide canvas
 document.body.appendChild(startScreen);
 canvas.style.display = 'none';
 
-let game = {
-    over: false,
-    active: false,
-};
-
-// Create instructions element
+// Create instructions
 const instructions = document.createElement('div');
 instructions.style.color = 'white';
 instructions.style.fontSize = '24px';
@@ -43,19 +140,13 @@ instructions.innerHTML = `
     <p>SPACE - Shoot</p>
 `;
 
-// Create button container for horizontal layout
+// Create button container
 const buttonContainer = document.createElement('div');
 buttonContainer.style.display = 'flex';
 buttonContainer.style.gap = '20px';
 buttonContainer.style.justifyContent = 'center';
 
-// Add an animation ID variable at the top with other game settings
-let animationId = null;
-
-// Add a global variable to store a pending end-screen timeout ID
-let endScreenTimeoutId = null;
-
-// Modify the createDifficultyButton function
+// Create difficulty buttons
 const createDifficultyButton = (text, difficulty) => {
     const button = document.createElement('button');
     button.textContent = text;
@@ -69,7 +160,6 @@ const createDifficultyButton = (text, difficulty) => {
     button.style.fontFamily = 'sans-serif';
     button.style.transition = 'all 0.3s ease';
     
-    // Hover effects
     button.onmouseover = () => {
         button.style.backgroundColor = '#007bff';
         button.style.color = 'white';
@@ -83,37 +173,20 @@ const createDifficultyButton = (text, difficulty) => {
     return button;
 };
 
+// Add buttons to container
 const chillButton = createDifficultyButton('Chill Mode', 'chill');
 const standardButton = createDifficultyButton('Standard Mode', 'standard');
 const ludicrousButton = createDifficultyButton('Ludicrous Mode', 'ludicrous');
 
-// Clear existing content and add new elements in order
 startScreen.innerHTML = '';
 startScreen.appendChild(instructions);
 startScreen.appendChild(buttonContainer);
-
-// Add buttons to the horizontal container instead of directly to startScreen
 buttonContainer.appendChild(chillButton);
 buttonContainer.appendChild(standardButton);
 buttonContainer.appendChild(ludicrousButton);
 
-// Add game settings object
-let gameSettings = {
-    mode: 'standard',
-    alienSpeed: 3,
-    shootersCount: 3,
-    alienSpawnInterval: 200,
-    continuousShooting: false
-};
-
-// Add these variables near the top with other game settings
-let lastShotTime = 0;
-const SHOT_COOLDOWN = 50; // 100ms between shots for faster firing rate
-let sessionHighScore = 0;
-
-// Modify the start game function
+// Game functions
 function startGame(difficulty) {
-    // Cancel any existing animation frame
     if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
@@ -152,74 +225,12 @@ function startGame(difficulty) {
     startScreen.style.display = 'none';
     canvas.style.display = 'block';
     game.active = true;
-    frames = 0;  // Reset frames counter
+    frames = 0;
     animate();
+    mobileControls.showControls();
 }
 
 game.active= false;
-class Player{
-    constructor(){
-        
-
-        this.velocity = {
-            x: 0,
-            y:0
-        }
-
-        this.rotation = 0;
-        this.opacity = 1;
-        this.canShoot = true; 
-
-         const image = new Image();
-         image.src='./img/mothership.png';
-         image.onload = () => {
-            const scale = 0.15;
-            this.image =  image;
-            this.width= image.width*scale;
-            this.height = image.height*scale;
-            this.position = {
-                x: canvas.width/2 - this.width/2,
-                y: canvas.height-this.height-20
-            };
-         };
-        
-    }
-
-    draw(){
-        //  c.fillStyle= 'red'
-        //  c.fillRect (this.position.x,this.position.y,this.width,this.height)
-        c.save();
-        c.globalAlpha = this.opacity
-        c.translate(
-            player.position.x + player.width/2,
-            player.position.y + player.height/2
-        );
-
-        c.rotate(this.rotation)
-
-        c.translate(
-            -player.position.x - player.width/2,
-            -player.position.y - player.height/2
-        );
-
-        if(this.image && this.position)
-        c.drawImage(
-        this.image,
-        this.position.x,
-        this.position.y,
-        this.width,
-        this.height
-    );
-    c.restore();
-    }
-    update(){
-        if(this.position){
-        this.draw();
-        this.position.x +=this.velocity.x;
-        }
-        
-    }
-}
 
 class Projectile{
     constructor({position,velocity}){
@@ -403,28 +414,14 @@ class InvaderProjectile{
     }
 }
 
-const player = new Player();
 const projectiles = []
 const grids = []
 const invaderProjectiles = []
 const particles = []
-const keys = {
-    a: {
-        pressed: false
-    },
-    d: {
-        pressed: false
-    },
-    space: {
-        pressed: false
-    }
-}
 
-let frames =0
 let intervalrnd = Math.floor((Math.random()*200) + 200);
 
 
-let score = 0
 for(let i = 0; i<100; i++){
     particles.push(new Particle({
        position:{
