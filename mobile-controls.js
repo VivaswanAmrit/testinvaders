@@ -90,10 +90,10 @@ export class MobileControlsManager {
             userSelect: 'none',
             position: 'relative',
             cursor: 'pointer',
-            margin: '0 7px',
+            margin: '0 10px',
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center',
+            alignItems: 'left',
             outline: 'none'
         });
     }
