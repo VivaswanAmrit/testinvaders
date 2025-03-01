@@ -20,7 +20,7 @@ class Player {
         this.canShoot = true; 
 
          const image = new Image();
-         image.src='./img/mothership.png';
+         image.src='/mothership.png';
          image.onload = () => {
             const scale = isMobile() ? 0.10 : 0.15;
             this.image =  image;
@@ -316,7 +316,7 @@ class Invader{
             y:0
         }
          const image = new Image();
-         image.src='./img/alien.png';
+         image.src='/alien.png';
          image.onload = () => {
             const scale = isMobile() ? 0.15 : 0.20;
             this.image =  image;
