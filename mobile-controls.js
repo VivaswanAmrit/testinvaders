@@ -81,7 +81,7 @@ export class MobileControlsManager {
         Object.assign(button.style, {
             width: '80px',
             height: '80px',
-            borderRadius: '20%',
+            borderRadius: '50%',
             backgroundColor: 'rgba(255, 255, 255, 0.4)',
             border: '3px solid white',
             color: 'white',
@@ -90,7 +90,7 @@ export class MobileControlsManager {
             userSelect: 'none',
             position: 'relative',
             cursor: 'pointer',
-            margin: '0 10px',
+            margin: '0 7px',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
