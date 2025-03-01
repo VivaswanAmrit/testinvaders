@@ -324,31 +324,54 @@ class Particle{
     }
 }
 
-class Invader{
-    constructor({position}){
+class Invader {
+    constructor({position}) {
         this.velocity = {
             x: 0,
-            y:0
+            y: 0
         }
-        this.isReady = false;  // Add flag to track readiness
+        this.position = position;  // Set position immediately
+        this.width = 30;  // Set default width
+        this.height = 30;  // Set default height
         
         const image = new Image();
-        image.src='./img/alien.png';
+        image.src = './img/alien.png';
         image.onload = () => {
             const scale = isMobile() ? 0.15 : 0.20;
-            this.image =  image;
-            this.width= image.width*scale;
-            this.height = image.height*scale;
-            this.position = {
-                x: position.x,
-                y: position.y
-            };
-            this.isReady = true;  // Mark as ready when image is loaded
+            this.image = image;
+            this.width = image.width * scale;
+            this.height = image.height * scale;
         };
     }
+
+    shoot(invaderProjectiles) {
+        // Only shoot if we have all required properties
+        if (!this.position || !this.width || !this.height) return;
+
+        invaderProjectiles.push(new InvaderProjectile({
+            position: {
+                x: this.position.x,
+                y: this.position.y + this.height
+            },
+            velocity: {
+                x: 0,
+                y: 5
+            }
+        }));
+
+        invaderProjectiles.push(new InvaderProjectile({
+            position: {
+                x: this.position.x + this.width,
+                y: this.position.y + this.height
+            },
+            velocity: {
+                x: 0,
+                y: 5
+            }
+        }));
+    }
+
     draw(){
-        //  c.fillStyle= 'red'
-        //  c.fillRect (this.position.x,this.position.y,this.width,this.height)
         if(this.image && this.position)
         c.drawImage(
         this.image,
@@ -357,8 +380,8 @@ class Invader{
         this.width,
         this.height
     );
-
     }
+
     update({velocity}){
         if(this.position){
         this.draw();
@@ -366,32 +389,6 @@ class Invader{
         this.position.y +=velocity.y;
         }
         
-    }
-
-    shoot(invaderProjectiles){
-        if (!this.isReady) return;  // Don't shoot if not ready
-
-        invaderProjectiles.push(new InvaderProjectile({
-            position:{
-                x: this.position.x,
-                y:this.position.y+this.height
-            },
-            velocity:{
-                x:0,
-                y:5
-            }
-        }));
-
-        invaderProjectiles.push(new InvaderProjectile({
-            position:{
-                x: this.position.x+this.width,
-                y:this.position.y+this.height
-            },
-            velocity:{
-                x:0,
-                y:5
-            }
-        }));
     }
 }
 
@@ -401,51 +398,27 @@ class Grid {
             x: 0,
             y: 0
         }
-
         this.velocity = {
             x: gameSettings.alienSpeed,
             y: 0
         }
         this.invaders = []
-        this.width = 0  // We'll update this when invaders are ready
 
         const columns = Math.floor(Math.random() * (isMobile() ? 3 : 5) + (isMobile() ? 5 : 7))
         const rows = Math.floor(Math.random() * (isMobile() ? 2 : 2) + (isMobile() ? 2 : 3))
 
-        // Create a promise for each invader
-        const invaderPromises = []
-        
+        this.width = columns * (isMobile() ? 20 : 25)
+
         for(let i = 0; i < columns; i++) {
             for(let j = 0; j < rows; j++) {
-                const invaderPromise = new Promise((resolve) => {
-                    const invader = new Invader({
-                        position: {
-                            x: i * (isMobile() ? 20 : 25),
-                            y: j * (isMobile() ? 45 : 55)
-                        }
-                    })
-                    
-                    // Create an interval to check when invader is ready
-                    const checkReady = setInterval(() => {
-                        if (invader.isReady) {
-                            clearInterval(checkReady)
-                            resolve(invader)
-                        }
-                    }, 10)
-                })
-                invaderPromises.push(invaderPromise)
+                this.invaders.push(new Invader({
+                    position: {
+                        x: i * (isMobile() ? 20 : 25),
+                        y: j * (isMobile() ? 45 : 55)
+                    }
+                }))
             }
         }
-
-        // When all invaders are ready, add them to the grid
-        Promise.all(invaderPromises).then(readyInvaders => {
-            this.invaders = readyInvaders
-            // Update grid width based on actual invader dimensions
-            if (this.invaders.length > 0) {
-                const lastInvader = this.invaders[this.invaders.length - 1]
-                this.width = lastInvader.position.x + lastInvader.width
-            }
-        })
     }
 
     update(){
@@ -599,25 +572,22 @@ function animate(){
         grid.update()
         
         if (frames % 70 === 0 && grid.invaders.length > 0) {
-            const readyInvaders = grid.invaders.filter(invader => invader && invader.isReady)
-            if (readyInvaders.length > 0) {
-                const numShooters = Math.min(gameSettings.shootersCount, readyInvaders.length)
-                const shooters = []
+            const numShooters = Math.min(gameSettings.shootersCount, grid.invaders.length);
+            const shooters = [];
 
-                while (shooters.length < numShooters) {
-                    const randomIndex = Math.floor(Math.random() * readyInvaders.length)
-                    if (!shooters.includes(randomIndex)) {
-                        shooters.push(randomIndex)
-                    }
+            while (shooters.length < numShooters) {
+                const randomIndex = Math.floor(Math.random() * grid.invaders.length);
+                if (!shooters.includes(randomIndex)) {
+                    shooters.push(randomIndex);
                 }
-
-                shooters.forEach((index) => {
-                    const invader = readyInvaders[index]
-                    if (invader && invader.isReady && invader.position) {
-                        invader.shoot(invaderProjectiles)
-                    }
-                })
             }
+
+            shooters.forEach((index) => {
+                const invader = grid.invaders[index];
+                if (invader && invader.position) {  // Simplified check
+                    invader.shoot(invaderProjectiles);
+                }
+            });
         }
         grid.invaders.forEach((invader,i)=>{
             invader.update({velocity:grid.velocity})
