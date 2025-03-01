@@ -1,4 +1,5 @@
 import { MobileControlsManager } from './mobile-controls.js';
+import { Leaderboard } from './leaderboard.js';
 
 const scoreEt = document.querySelector('#scoreEt');
 const canvas = document.querySelector('canvas');
@@ -200,8 +201,22 @@ buttonContainer.appendChild(chillButton);
 buttonContainer.appendChild(standardButton);
 buttonContainer.appendChild(ludicrousButton);
 
+// Add leaderboard
+const leaderboard = new Leaderboard();
+startScreen.appendChild(leaderboard.createNameInput());
+startScreen.appendChild(instructions);
+startScreen.appendChild(buttonContainer);
+
 // Game functions
 function startGame(difficulty) {
+    const nameInput = document.getElementById('playerNameInput');
+    if (!nameInput.value.trim()) {
+        alert('Please enter your name!');
+        return;
+    }
+    leaderboard.playerName = nameInput.value.trim();
+    leaderboard.currentMode = difficulty;
+    
     if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
@@ -221,8 +236,8 @@ function startGame(difficulty) {
             gameSettings = {
                 mode: 'standard',
                 alienSpeed: isMobile() ? 2 : 3,
-                shootersCount: isMobile() ? 1 : 3,
-                alienSpawnInterval: isMobile() ? 280 : 200,
+                shootersCount: isMobile() ? 2 : 3,
+                alienSpawnInterval: isMobile() ? 250 : 200,
                 continuousShooting: false
             };
             break;
@@ -315,9 +330,11 @@ class Invader{
             x: 0,
             y:0
         }
-         const image = new Image();
-         image.src='./img/alien.png';
-         image.onload = () => {
+        this.isReady = false;  // Add flag to track readiness
+        
+        const image = new Image();
+        image.src='./img/alien.png';
+        image.onload = () => {
             const scale = isMobile() ? 0.15 : 0.20;
             this.image =  image;
             this.width= image.width*scale;
@@ -326,7 +343,8 @@ class Invader{
                 x: position.x,
                 y: position.y
             };
-         }; 
+            this.isReady = true;  // Mark as ready when image is loaded
+        };
     }
     draw(){
         //  c.fillStyle= 'red'
@@ -351,6 +369,8 @@ class Invader{
     }
 
     shoot(invaderProjectiles){
+        if (!this.isReady) return;  // Don't shoot if not ready
+
         invaderProjectiles.push(new InvaderProjectile({
             position:{
                 x: this.position.x,
@@ -372,7 +392,6 @@ class Invader{
                 y:5
             }
         }));
-
     }
 }
 
@@ -567,7 +586,10 @@ function animate(){
             }
 
             shooters.forEach((index) => {
-                grid.invaders[index].shoot(invaderProjectiles);
+                const invader = grid.invaders[index];
+                if (invader && invader.isReady) {  // Only shoot if invader is ready
+                    invader.shoot(invaderProjectiles);
+                }
             });
         }
         grid.invaders.forEach((invader,i)=>{
@@ -800,10 +822,19 @@ function createEndScreen() {
         location.reload();
     });
 
+    // Add leaderboard button
+    const leaderboardButton = createEndButton('View Leaderboard', () => {
+        leaderboard.showLeaderboard(gameSettings.mode);
+    });
+
     buttonContainer.appendChild(restartButton);
     buttonContainer.appendChild(menuButton);
+    buttonContainer.appendChild(leaderboardButton);
     endScreen.appendChild(scoreDisplay);
     endScreen.appendChild(buttonContainer);
+
+    // Submit score when showing end screen
+    leaderboard.submitScore(score, gameSettings.mode);
 
     return endScreen;
 }
