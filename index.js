@@ -221,8 +221,8 @@ function startGame(difficulty) {
             gameSettings = {
                 mode: 'standard',
                 alienSpeed: isMobile() ? 2 : 3,
-                shootersCount: isMobile() ? 2 : 3,
-                alienSpawnInterval: isMobile() ? 250 : 200,
+                shootersCount: isMobile() ? 1 : 3,
+                alienSpawnInterval: isMobile() ? 280 : 200,
                 continuousShooting: false
             };
             break;
