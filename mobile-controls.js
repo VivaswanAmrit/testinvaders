@@ -38,7 +38,7 @@ export class MobileControlsManager {
             left: '0',
             width: '100%',
             display: 'none',
-            justifyContent: 'space-between',
+            justifyContent: 'space-evenly',
             padding: '0 20px',
             zIndex: '100',
             pointerEvents: 'none'
@@ -93,7 +93,7 @@ export class MobileControlsManager {
             margin: '0 10px',
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'left',
+            alignItems: 'center',
             outline: 'none'
         });
     }
